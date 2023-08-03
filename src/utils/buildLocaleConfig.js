@@ -2,11 +2,8 @@
 const DATE_CONSTANTS = require("../Constants/date");
 
 /******** LOCAL FILE IMPORTS ********/
-const {
-    getConfig,
-    removeEmptyValuesFromObject
-} = require("./helperFunctions");
-const config = getConfig();
+const helperFunctions = require("./helperFunctions");
+const config = helperFunctions.getConfig();
 
 /**
  * @function getDateFormat
@@ -106,5 +103,5 @@ exports.buildLocaleConfig = function buildLocaleConfig(date, isTimeOnly = false)
         );
     }
 
-    return removeEmptyValuesFromObject(dateTimeConfig);
+    return helperFunctions.removeEmptyValuesFromObject(dateTimeConfig);
 }

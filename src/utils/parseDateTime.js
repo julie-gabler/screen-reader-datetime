@@ -29,9 +29,9 @@ function parseTimeOnly(timestamp) {
  * @returns {string} - accessible format for the aria-label
  */
 exports.parseDateTime = function parseDateTime(datetime) {
-    const config = getConfig();
     const dateTimeStamp = standarizedDateTimeString(datetime);
     const date = new Date(dateTimeStamp);
+    const config = getConfig();
 
     if (isValidDate(date)) {
         return new Date(dateTimeStamp).toLocaleTimeString(

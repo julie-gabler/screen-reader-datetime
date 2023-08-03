@@ -3,7 +3,7 @@ const chai = require('chai');
 const sinon = require('sinon');
 const { expect } = require('chai');
 const { JSDOM } = require('jsdom');
-const helperFuncs = require('../src/utils/helperFunctions');
+const { getConfig } = require('../src/utils/helperFunctions');
 
 
 /******** LOCAL FILE IMPORTS ********/
@@ -31,13 +31,12 @@ describe("Screen reader friendly dates:", function() {
             dom = jsDom;
             document = dom.window.document;
         });
-
         sandbox = sinon.createSandbox();
     });
 
     afterEach(() => {
-        sinon.restore();
-    })
+        sandbox.restore();
+    });
 
     // READ OUT FOR TESTING SPECS
     console.log('Testing File Path:', TEST_FILE_PATH);
@@ -67,22 +66,24 @@ describe("Screen reader friendly dates:", function() {
         });
 
         it("converts numeric date and time to readable string for 24 hour time in the morning", function () {
-            helperFuncs.getConfig = sinon.stub().callsFake(() => ({
-                    "locale": "en-US",
-                    "hourCycle": "h24",
-                    "hasWeekday": true
-                }));
-            // const stub = sinon.stub(helperFuncs, 'getConfig').returns({
-            //     "locale": "en-US",
-            //     "hourCycle": "h24",
-            //     "hasWeekday": true
-            // });
-            console.log(helperFuncs.getConfig);
+            before(() => {
+                stub = sinon.stub(getConfig);
+            });
 
+            after(() => {
+                getConfig.restore();
+            });
+
+            const config24Hour = {
+                "locale": "en-US",
+                "hourCycle": "h24",
+                "hasWeekday": true
+            };
+
+            stub.callsFake(() => config24Hour);
             const testElm = getDateTimeAttribute("test-1", document);
             const parsedTest = parseDateTimeTest(testElm);
 
-            expect((helperFuncs.getConfig).calledOnce).to.be.true;
             expect(parsedTest).to.be.a('string');
             expect(parsedTest).to.equal("Monday, May 2, 2022, 11:30");
         });
