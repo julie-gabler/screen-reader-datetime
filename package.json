@@ -1,0 +1,33 @@
+{
+  "name": "screen-reader-datetime",
+  "version": "1.0.0",
+  "description": "Create screen reader friendly dates and times via aria-label",
+  "main": "src/index.js",
+  "scripts": {
+    "prompt": "node ./config/prompt/prompt.js",
+    "test": "mocha --reporter spec"
+  },
+  "keywords": [
+    "accessiblity",
+    "screen reader",
+    "datetime"
+  ],
+  "author": "Julianna Gabler",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.22.9",
+    "@types/node": "^20.4.5",
+    "chai": "^4.3.7",
+    "chai-dom": "^1.11.0",
+    "express": "^4.18.2",
+    "jsdom": "22.1.0",
+    "jsdom-global": "3.0.2",
+    "mocha": "^10.2.0",
+    "request": "^2.88.2",
+    "sinon": "^15.2.0",
+    "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "prompts": "^2.4.2"
+  }
+}
