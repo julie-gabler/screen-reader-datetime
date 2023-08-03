@@ -1,7 +1,7 @@
 {
   "name": "screen-reader-datetime",
   "version": "1.0.0",
-  "description": "Create screen reader friendly dates and times via aria-label",
+  "description": "Creates screen reader friendly dates and times via aria-label",
   "main": "src/index.js",
   "scripts": {
     "prompt": "node ./config/prompt/prompt.js",
