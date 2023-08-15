@@ -1,6 +1,11 @@
 "use strict";
 
 const { parseDateTime } = require("./utils/parseDateTime");
+const {
+    ARIA_LABEL,
+    DATETIME_ATTRIBUTE,
+    TIME_ELEMENT
+} = require('./Constants/attributes');
 
 /**
  * @function updateElmsWithAccessibleLabels
@@ -10,9 +15,9 @@ const { parseDateTime } = require("./utils/parseDateTime");
  */
 function updateElmsWithAccessibleLabels(timeElms) {
     timeElms.forEach((timeElm, index) => {
-        const dateTime = timeElm.getAttribute("datetime");
+        const dateTime = timeElm.getAttribute(DATETIME_ATTRIBUTE);
         const parsedDateTime = parseDateTime(dateTime);
-        timeElm.setAttribute("aria-label", parsedDateTime);
+        timeElm.setAttribute(ARIA_LABEL, parsedDateTime);
     });
 }
 
@@ -25,7 +30,7 @@ function updateElmsWithAccessibleLabels(timeElms) {
  *              accessible date time format
  */
 function accessibleDateTime() {
-    const timeElms = [...document.getElementsByTagName("time")];
+    const timeElms = [...document.getElementsByTagName(TIME_ELEMENT)];
     updateElmsWithAccessibleLabels(timeElms);
 }
 

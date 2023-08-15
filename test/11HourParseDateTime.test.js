@@ -13,7 +13,7 @@ const configuration = require('../src/utils/getConfiguration');
 const { getDateTimeAttribute } = require('./test-utils/helperTestFunctions');
 
 /******** MOCK CONFIG IMPORTS ********/
-const configDefault = require('./mocks/default');
+const config11Hour = require('./mocks/hour11');
 
 /******** CONSTANTS ********/
 const TEST_FILE_PATH = __dirname + '/index.test.html';
@@ -21,11 +21,11 @@ const TEST_FILE_PATH = __dirname + '/index.test.html';
 /******** LOCAL VARIABLES ********/
 let dom, document, sandbox, spy, stub;
 
-describe("12 Hour - Screen reader friendly dates:", function() {
+describe("11 Hour - Screen reader friendly dates:", function() {
     // create sandbox for testing
     before(() => {
         sandbox = sinon.createSandbox();
-    });
+});
 
     /**
      * Ensure that the index.html test file is loaded for each
@@ -35,8 +35,8 @@ describe("12 Hour - Screen reader friendly dates:", function() {
     beforeEach(async function() {
         await JSDOM.fromFile(TEST_FILE_PATH).then(jsDom => {
             dom = jsDom;
-            document = dom.window.document;
-        });
+        document = dom.window.document;
+    });
 
         // stub = sandbox.stub(helperFunctions, "getConfig");
         stub = sandbox.stub(configuration, "getConfig");
@@ -48,7 +48,7 @@ describe("12 Hour - Screen reader friendly dates:", function() {
      */
     afterEach(() => {
         sandbox.restore(); // restore all fakes
-    });
+});
 
     // READ OUT FOR TESTING SPECS
     console.log('Testing File Path:', TEST_FILE_PATH);
@@ -57,7 +57,7 @@ describe("12 Hour - Screen reader friendly dates:", function() {
     /**
      * For full date and time labels such as 2022-05-02T11:30
      */
-    describe("(12 hour format: 1-12 hr) Conversion to accessible labels", function () {
+    describe("(11 hour format: 0-11 hr) Conversion to accessible labels", function () {
         /**
          * tests should be completed using the config set: default.json
          *  "locale": "en-US",
@@ -66,7 +66,7 @@ describe("12 Hour - Screen reader friendly dates:", function() {
          */
         beforeEach(() => {
             const getConfig = function getConfig() {
-                return configDefault;
+                return config11Hour;
             };
             stub.value(getConfig);
         });
@@ -113,20 +113,20 @@ describe("12 Hour - Screen reader friendly dates:", function() {
             expect(parsedTest).to.equal("7:30 PM");
         });
 
-        it("converts numeric time at midnight to start at 12", function() {
+        it("converts numeric time at midnight to start at 0", function() {
             const testElm = getDateTimeAttribute("test-3", document);
             const parsedTest = parseDateTimeObj.parseDateTime(testElm);
 
             expect(parsedTest).to.be.a('string');
-            expect(parsedTest).to.equal("12:30 AM");
+            expect(parsedTest).to.equal("0:30 AM");
         });
 
-        it("converts numeric time at noon to start at 12", function() {
+        it("converts numeric time at noon to start at 0", function() {
             const testElm = getDateTimeAttribute("test-4", document);
             const parsedTest = parseDateTimeObj.parseDateTime(testElm);
 
             expect(parsedTest).to.be.a('string');
-            expect(parsedTest).to.equal("12:40 PM");
+            expect(parsedTest).to.equal("0:40 PM");
         });
 
         it("converts numeric time at noon to start at 1", function() {

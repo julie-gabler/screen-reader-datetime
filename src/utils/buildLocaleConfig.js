@@ -5,24 +5,25 @@ const { LOCALE_TYPES } = require('../Constants/locale-types');
 
 // /******** LOCAL FILE IMPORTS ********/
 const { removeEmptyValuesFromObject } = require('./helperFunctions');
-const configuration = require('./getConfiguration');
-const config = configuration.getConfig();
+// const configuration = require('./getConfiguration');
+// const config = configuration.getConfig();
 
 /**
  * @function getDateFormat
  * @description
  * @param dateFormat {String} - the expected format
  * @param date {Date} - the Date object from the datetime attribute
+ * @param hasWeekday {boolean} - whether weekday is present
  * @returns {null|number}
  */
-function getDateFormat(dateFormat, date) {
+function getDateFormat(dateFormat, date, hasWeekday = false) {
     let configValue = "numeric";
     let formatValue;
 
     switch (dateFormat) {
         case DATE_CONSTANTS.WEEKDAY:
             configValue = "long";
-            formatValue = config.hasWeekday ? date.getDay() : null;
+            formatValue = hasWeekday ? date.getDay() : null;
             break;
         case DATE_CONSTANTS.MONTH:
             configValue = "long";
@@ -96,17 +97,17 @@ function getHourCycleValue(configValue) {
  * @returns {Object}
  */
 function buildTimeConfig(date, hourCycle) {
-    let config = {};
+    const timeConfig = {};
 
-    config[DATE_CONSTANTS.HOUR] = getDateFormat(DATE_CONSTANTS.HOUR, date);
-    config[DATE_CONSTANTS.MINUTES] = getDateFormat(DATE_CONSTANTS.MINUTES, date);
-    config[DATE_CONSTANTS.SECONDS] = getDateFormat(DATE_CONSTANTS.SECONDS, date);
+    timeConfig[DATE_CONSTANTS.HOUR] = getDateFormat(DATE_CONSTANTS.HOUR, date);
+    timeConfig[DATE_CONSTANTS.MINUTES] = getDateFormat(DATE_CONSTANTS.MINUTES, date);
+    timeConfig[DATE_CONSTANTS.SECONDS] = getDateFormat(DATE_CONSTANTS.SECONDS, date);
 
     if (hourCycle) {
-        config[HOUR_CYCLE] = getHourCycleValue(hourCycle);
+        timeConfig[HOUR_CYCLE] = getHourCycleValue(hourCycle);
     }
 
-    return config;
+    return timeConfig;
 }
 
 /**
@@ -117,38 +118,39 @@ function buildTimeConfig(date, hourCycle) {
  * @returns {object}
  */
 function buildDateConfig(date, hasWeekday = false) {
-    const config = {};
+    const dateConfig = {};
 
-    config[DATE_CONSTANTS.MONTH] = getDateFormat(DATE_CONSTANTS.MONTH, date);
-    config[DATE_CONSTANTS.DAY] = getDateFormat(DATE_CONSTANTS.DAY, date);
-    config[DATE_CONSTANTS.YEAR] = getDateFormat(DATE_CONSTANTS.YEAR, date);
+    dateConfig[DATE_CONSTANTS.MONTH] = getDateFormat(DATE_CONSTANTS.MONTH, date);
+    dateConfig[DATE_CONSTANTS.DAY] = getDateFormat(DATE_CONSTANTS.DAY, date);
+    dateConfig[DATE_CONSTANTS.YEAR] = getDateFormat(DATE_CONSTANTS.YEAR, date);
 
     if (hasWeekday) {
-        config[DATE_CONSTANTS.WEEKDAY] = getDateFormat(DATE_CONSTANTS.WEEKDAY, date);
+        dateConfig[DATE_CONSTANTS.WEEKDAY] = getDateFormat(DATE_CONSTANTS.WEEKDAY, date, hasWeekday);
     }
 
-    return config;
+    return dateConfig;
 }
 
 /**
  * @function buildLocaleConfig
  * @description
  * @param date {Date} - Date object
+ * @param userConfig {Object} - user config settings
  * @param {string} localeType - the locale type
  * @return {Object} - contains all of the formatting for the newly formatted timestamp
  *                    based on what is currently in the timestamp param
  */
-exports.buildLocaleConfig = function buildLocaleConfig(date, localeType) {
+exports.buildLocaleConfig = function buildLocaleConfig(date, userConfig, localeType) {
     let dateTimeConfig = {};
 
     // DATE_TIME, TIME_ONLY => include time config
     if (localeType !== LOCALE_TYPES.DATE_ONLY) {
-        dateTimeConfig = buildTimeConfig(date, config.hourCycle);
+        dateTimeConfig = buildTimeConfig(date, userConfig.hourCycle);
     }
 
     // DATE_TIME, DATE_ONLY => include date config
     if (localeType !== LOCALE_TYPES.TIME_ONLY) {
-        const dateConfig = buildDateConfig(date, config.hasWeekday);
+        const dateConfig = buildDateConfig(date, userConfig.hasWeekday);
         dateTimeConfig = {
             ...dateTimeConfig,
             ...dateConfig
