@@ -16,6 +16,7 @@ const questions = [
         name: 'hourCycle',
         message: 'Pick your desired hour format a color',
         choices: [
+            { title: 'Default for locale', description: 'Uses the default as set by the locale',  value: null },
             { title: 'Hour 12 format', description: '1-12, Midnight starts at 12:00 am',  value: 'h12' },
             { title: 'Hour 23 format', description: '0-23, Midnight starts at 0:00',  value: 'h23' },
             { title: 'Hour 11 format', description: '0 - 11, Midnight starts at 0:00 am', value: 'h11' },

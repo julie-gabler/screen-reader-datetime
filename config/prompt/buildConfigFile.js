@@ -1,4 +1,6 @@
 const fs = require('fs');
+const { removeEmptyValuesFromObject } = require('../../src/utils/helperFunctions');
+
 const CONFIG_FOLDER_NAME = "config/";
 const CONFIG_FILE_NAME = "config.json";
 
@@ -19,7 +21,8 @@ function getConfigDirectory () {
  */
 exports.createConfigFile = function buildConfigFile(responses) {
     const configPath = getConfigDirectory() + CONFIG_FILE_NAME;
-    const configJSON = JSON.stringify(responses);
+    const resp = removeEmptyValuesFromObject(responses);
+    const configJSON = JSON.stringify(resp);
     (Object.keys(responses)).forEach((key) => console.log(`${key}: ${responses[key]}`));
     fs.writeFile(configPath, configJSON, 'utf8', (err) => {
         if (err) {

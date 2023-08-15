@@ -1,9 +1,12 @@
 /******** CONSTANTS ********/
-const DATE_CONSTANTS = require("../Constants/date");
+const DATE_CONSTANTS = require('../Constants/date');
+const { HOUR_CYCLE, HOUR_CYCLE_VALUES } = require('../Constants/hour-cycles');
+const { LOCALE_TYPES } = require('../Constants/locale-types');
 
-/******** LOCAL FILE IMPORTS ********/
-const helperFunctions = require("./helperFunctions");
-const config = helperFunctions.getConfig();
+// /******** LOCAL FILE IMPORTS ********/
+const { removeEmptyValuesFromObject } = require('./helperFunctions');
+const configuration = require('./getConfiguration');
+const config = configuration.getConfig();
 
 /**
  * @function getDateFormat
@@ -19,7 +22,7 @@ function getDateFormat(dateFormat, date) {
     switch (dateFormat) {
         case DATE_CONSTANTS.WEEKDAY:
             configValue = "long";
-            formatValue = config.hasWeekday ? date.getDay() : 0;
+            formatValue = config.hasWeekday ? date.getDay() : null;
             break;
         case DATE_CONSTANTS.MONTH:
             configValue = "long";
@@ -32,11 +35,7 @@ function getDateFormat(dateFormat, date) {
             formatValue = date.getFullYear();
             break;
         case DATE_CONSTANTS.HOUR:
-            /**
-             * Corrects a bug with Date where if no time is present in the string,
-             * the date.getHours will return a value when it should be 0
-             */
-            formatValue = date.getUTCHours() !== 0 ? date.getHours() : 0;
+            formatValue = date.getHours();
             break;
         case DATE_CONSTANTS.MINUTES:
             formatValue = date.getMinutes();
@@ -60,48 +59,101 @@ function getDateFormat(dateFormat, date) {
 }
 
 /**
+ * @function getHourCycleValue
+ * @description verifies and grabs the hour cycle value for build the config value
+ * @param configValue {String} - the provided value from config.json
+ * @returns {string}
+ */
+function getHourCycleValue(configValue) {
+    let hourCycle;
+
+    switch(configValue.toLowerCase()) {
+        case HOUR_CYCLE_VALUES.H11:
+            hourCycle = HOUR_CYCLE_VALUES.H11;
+            break;
+        case HOUR_CYCLE_VALUES.H12:
+            hourCycle = HOUR_CYCLE_VALUES.H12;
+            break;
+        case HOUR_CYCLE_VALUES.H23:
+            hourCycle = HOUR_CYCLE_VALUES.H23;
+            break;
+        case HOUR_CYCLE_VALUES.H24:
+            hourCycle = HOUR_CYCLE_VALUES.H24;
+            break;
+        default:
+            hourCycle = null;
+            break;
+    }
+
+    return hourCycle;
+}
+
+/**
+ * @function buildTimeConfig
+ * @description builds the time portion of the datetime string
+ * @param date {Date}
+ * @param hourCycle {string}
+ * @returns {Object}
+ */
+function buildTimeConfig(date, hourCycle) {
+    let config = {};
+
+    config[DATE_CONSTANTS.HOUR] = getDateFormat(DATE_CONSTANTS.HOUR, date);
+    config[DATE_CONSTANTS.MINUTES] = getDateFormat(DATE_CONSTANTS.MINUTES, date);
+    config[DATE_CONSTANTS.SECONDS] = getDateFormat(DATE_CONSTANTS.SECONDS, date);
+
+    if (hourCycle) {
+        config[HOUR_CYCLE] = getHourCycleValue(hourCycle);
+    }
+
+    return config;
+}
+
+/**
+ * @function buildDateConfig
+ * @descrition builds the configuration for the date portion of the date time string
+ * @param date {Date}
+ * @param hasWeekday {boolean}
+ * @returns {object}
+ */
+function buildDateConfig(date, hasWeekday = false) {
+    const config = {};
+
+    config[DATE_CONSTANTS.MONTH] = getDateFormat(DATE_CONSTANTS.MONTH, date);
+    config[DATE_CONSTANTS.DAY] = getDateFormat(DATE_CONSTANTS.DAY, date);
+    config[DATE_CONSTANTS.YEAR] = getDateFormat(DATE_CONSTANTS.YEAR, date);
+
+    if (hasWeekday) {
+        config[DATE_CONSTANTS.WEEKDAY] = getDateFormat(DATE_CONSTANTS.WEEKDAY, date);
+    }
+
+    return config;
+}
+
+/**
  * @function buildLocaleConfig
  * @description
  * @param date {Date} - Date object
- * @param {boolean} isTimeOnly - default false; sets up the config for time only
+ * @param {string} localeType - the locale type
  * @return {Object} - contains all of the formatting for the newly formatted timestamp
  *                    based on what is currently in the timestamp param
  */
-exports.buildLocaleConfig = function buildLocaleConfig(date, isTimeOnly = false) {
-    const dateTimeConfig = {
-        [DATE_CONSTANTS.HOUR]: getDateFormat(DATE_CONSTANTS.HOUR, date),
-        [DATE_CONSTANTS.MINUTES]: getDateFormat(DATE_CONSTANTS.MINUTES, date),
-        [DATE_CONSTANTS.SECONDS]: getDateFormat(DATE_CONSTANTS.SECONDS, date)
-    };
+exports.buildLocaleConfig = function buildLocaleConfig(date, localeType) {
+    let dateTimeConfig = {};
 
-    if(config.is12HourFormat && dateTimeConfig[DATE_CONSTANTS.HOUR]) {
-        dateTimeConfig[DATE_CONSTANTS.HOUR12] = is12HourFormat;
-    } else if (dateTimeConfig[DATE_CONSTANTS.HOUR]) {
-        dateTimeConfig[DATE_CONSTANTS.HOUR_CYCLE] = 'h23'; // 0-23 hour format instead of 1-24
+    // DATE_TIME, TIME_ONLY => include time config
+    if (localeType !== LOCALE_TYPES.DATE_ONLY) {
+        dateTimeConfig = buildTimeConfig(date, config.hourCycle);
     }
 
-    /**
-     * check to ensure we don't want to return the time string only instead of
-     * all possible parts of the Date time
-     */
-    if (!isTimeOnly) {
-        dateTimeConfig[DATE_CONSTANTS.WEEKDAY] = getDateFormat(
-            DATE_CONSTANTS.WEEKDAY,
-            date
-        );
-        dateTimeConfig[DATE_CONSTANTS.MONTH] = getDateFormat(
-            DATE_CONSTANTS.MONTH,
-            date
-        );
-        dateTimeConfig[DATE_CONSTANTS.DAY] = getDateFormat(
-            DATE_CONSTANTS.DAY,
-            date
-        );
-        dateTimeConfig[DATE_CONSTANTS.YEAR] = getDateFormat(
-            DATE_CONSTANTS.YEAR,
-            date
-        );
+    // DATE_TIME, DATE_ONLY => include date config
+    if (localeType !== LOCALE_TYPES.TIME_ONLY) {
+        const dateConfig = buildDateConfig(date, config.hasWeekday);
+        dateTimeConfig = {
+            ...dateTimeConfig,
+            ...dateConfig
+        };
     }
 
-    return helperFunctions.removeEmptyValuesFromObject(dateTimeConfig);
+    return removeEmptyValuesFromObject(dateTimeConfig);
 }

@@ -1,5 +1,5 @@
 {
-  "locale": "en-us",
-  "hour12": true,
+  "locale": "en-US",
+  "hourCycle": "h12",
   "hasWeekday": false
 }
